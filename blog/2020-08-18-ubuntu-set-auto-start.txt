@@ -1,0 +1,9 @@
+ubuntu中设置某个程序开机启动：
+
+chkconfig denyhosts on
+报错找不到chkconfig
+原因：
+在Ubuntu中，/etc/init.d已被/ usr / lib / systemd所取代。脚本仍然可以通过“服务”启动和停用。但主要命令现在是'systemctl'。chkconfig命令被留下，现在你用systemctl来做这件事。
+所以改成即可(apache2改成你要的)
+systemctl status apache2
+systemctl enable apache2.service

@@ -1,0 +1,16 @@
+Ubuntu新建用户
+1-su root
+2-useradd 你的用户名  //创建用户名
+3-passwd 你的用户名   //设置密码
+4-usermod -s /bin/bash 你的用户名    //指定命令解释程序 
+5-usermod -d /home/你的用户名 你的用户名   //为该用户指定主目录
+此时碰到问题，报错:
+    usermod: no changes
+解决方案：
+    mkdir /home/你的用户名
+    chown 你的用户名:你的用户名 /home/你的用户名
+再次执行usermod -d /home/你的用户名  解决
+6-验证：
+执行：su 你的用户名
+此时界面应该显示:
+你的用户名@ubuntu:/home/你的用户名$

@@ -1,0 +1,13 @@
+flutter之入门踩坑
+问题1：创建项目的时候卡在creating flutter project
+原因：创建项目的时候会从网上下载一些插件啥的，由于墙的原因无法正常下载导致卡着不动。虽然无法下载，但项目却是已创建，所以。。。
+解决：1.结束android studio  2.重新启动android studio  3.在创建的目录找到创建的项目打开   4.直接编译就可以了   
+
+问题2：接编译Flutter项目卡在running gradle task 'assembleDebug'  
+原因：同上，就是需要下载gradle什么的，而由于墙导致无法下载，所以也就无法编译，就卡住了
+解决：1.在terminal中手动用命令gradlew assembleDebug编译，这时候就会显示
+Downloading https://services.gradle.org/distributions/gradle-XXX-all.zip
+之类的，如果能正常下载则等它自己下载完，
+2.如果无法正常下载则手动下载，然后将下载的gradle-XXX-all.zip复制到
+C:\Users\你的用户名\.gradle\wrapper\dists\gradle-XXX-all\xxxxxxxxxxxxxxxxxxxxx\目录下
+3.重新运行编译命令gradlew assembleDebug就能正常编译了
