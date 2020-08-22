@@ -10,4 +10,122 @@ Downloading https://services.gradle.org/distributions/gradle-XXX-all.zip
 之类的，如果能正常下载则等它自己下载完，
 2.如果无法正常下载则手动下载，然后将下载的gradle-XXX-all.zip复制到
 C:\Users\你的用户名\.gradle\wrapper\dists\gradle-XXX-all\xxxxxxxxxxxxxxxxxxxxx\目录下
-3.重新运行编译命令gradlew assembleDebug就能正常编译了
+3.重新运行编译命令gradlew assembleDebug，命令是正常跑完了，但编译失败，日志如下：
+//======================================================
+Welcome to Gradle 5.6.2!
+
+Here are the highlights of this release:
+ - Incremental Groovy compilation
+ - Groovy compile avoidance
+ - Test fixtures for Java projects
+ - Manage plugin versions via settings script
+
+For more details see https://docs.gradle.org/5.6.2/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+A problem occurred configuring root project 'android'.
+> Could not resolve all artifacts for configuration ':classpath'.
+   > Could not download kotlin-gradle-plugin.jar (org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.70)
+      > Could not get resource 'https://jcenter.bintray.com/org/jetbrains/kotlin/kotlin-gradle-plugin/1.3.70/kotlin-gradle-plugin-1.3.70.jar'.
+         > Read timed out
+   > Could not download kotlin-compiler-embeddable.jar (org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.70)
+      > Could not get resource 'https://jcenter.bintray.com/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.3.70/kotlin-compiler-embeddable-1.3.70.jar'.
+         > Read timed out
+   > Could not download kotlin-daemon-client.jar (org.jetbrains.kotlin:kotlin-daemon-client:1.3.70)
+      > Could not get resource 'https://jcenter.bintray.com/org/jetbrains/kotlin/kotlin-daemon-client/1.3.70/kotlin-daemon-client-1.3.70.jar'.
+         > Read timed out
+
+* Try:
+Run with --stacktrace option to get the stack trace. Run with --info or --debug option to get more log output. Run with --scan to get full insights.
+
+* Get more help at https://help.gradle.org
+
+BUILD FAILED in 6m 55s
+//============================================================
+很明显，又是墙的问题，开代理，再次编译，这时候资源可以正常下载了，漫长的等待中。。。。。。
+等了好久还是失败：
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file 'D:\XXX\flutter_app\android\app\build.gradle' line: 24
+
+* What went wrong:
+A problem occurred evaluating project ':app'.
+> Failed to apply plugin [id 'com.android.internal.version-check']
+   > Minimum supported Gradle version is 5.6.4. Current version is 5.6.2. If using the gradle wrapper, try editing the distributionUrl in D:\XXX\flutter_app\android\gradle\wrapper\gradle-wrapper.properties to gradle-5.6.4-all.zip
+
+* Try:
+Run with --stacktrace option to get the stack trace. Run with --info or --debug option to get more log output. Run with --scan to get full insights.
+
+* Get more help at https://help.gradle.org
+
+BUILD FAILED in 18m 58s
+
+
+说gradle版本不对，提示里让把D:\XXX\flutter_app\android\gradle\wrapper\gradle-wrapper.properties 里的gradle改成5.6.4照着改
+再次编译，继续等待。。。。。。
+看了下日志，需要下载好多插件，代理快的话还好，慢的话就慢慢等吧。。。。。。
+
+不出意外的再次失败：
+//===================================================
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+> Configure project :app
+WARNING: The option 'android.enableR8' is deprecated and should not be used anymore.
+It will be removed in a future version of the Android Gradle plugin, and will no longer allow you to disable R8.
+Could not resolve compiler classpath. Check if Kotlin Gradle plugin repository is configured in project ':app'.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Could not determine the dependencies of task ':app:compileDebugKotlin'.
+> Could not resolve all files for configuration ':app:kotlinCompilerClasspath'.
+   > Could not download kotlin-reflect.jar (org.jetbrains.kotlin:kotlin-reflect:1.3.50)
+      > Could not get resource 'https://jcenter.bintray.com/org/jetbrains/kotlin/kotlin-reflect/1.3.50/kotlin-reflect-1.3.50.jar'.
+         > Read timed out
+   > Could not download kotlin-stdlib.jar (org.jetbrains.kotlin:kotlin-stdlib:1.3.50)
+      > Could not get resource 'https://jcenter.bintray.com/org/jetbrains/kotlin/kotlin-stdlib/1.3.50/kotlin-stdlib-1.3.50.jar'.
+         > Read timed out
+
+* Try:
+Run with --stacktrace option to get the stack trace. Run with --info or --debug option to get more log output. Run with --scan to get full insights.
+
+* Get more help at https://help.gradle.org
+
+BUILD FAILED in 8m 8s
+//===================================================
+搜了一下，说使用阿里云的镜像
+修改build.gradle，把jcenter()抱成maven{url 'http://maven.aliyun.com/nexus/content/groups/public/'}
+关掉代理，再次编译
+等了10来分钟再次失败：
+Starting a Gradle Daemon, 1 busy Daemon could not be reused, use --status for details
+
+> Configure project :app
+WARNING: The option 'android.enableR8' is deprecated and should not be used anymore.
+It will be removed in a future version of the Android Gradle plugin, and will no longer allow you to disable R8.
+<=============> 100% CONFIGURING [2m 46s]
+> IDLE
+Could not resolve compiler classpath. Check if Kotlin Gradle plugin repository is configured in project ':app'.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Could not determine the dependencies of task ':app:compileDebugKotlin'.
+> Could not resolve all files for configuration ':app:kotlinCompilerClasspath'.
+   > Could not download kotlin-reflect.jar (org.jetbrains.kotlin:kotlin-reflect:1.3.50)
+      > Could not get resource 'https://jcenter.bintray.com/org/jetbrains/kotlin/kotlin-reflect/1.3.50/kotlin-reflect-1.3.50.jar'.
+         > Read timed out
+
+* Try:
+Run with --stacktrace option to get the stack trace. Run with --info or --debug option to get more log output. Run with --scan to get full insights.
+
+* Get more help at https://help.gradle.org
+
+BUILD FAILED in 5m 40s
+//====================================================
+一个文件下载失败，直接再次重新编译，等了一会儿下载成功，编译成功^_^
+命令都编译成功了，直接接上手机跑起，成功了^_^

@@ -1,0 +1,59 @@
+1apt update
+2apt upgrade
+3-apt install nginx
+4-apt install mysql-server
+5-apt install mysql-client
+6-apt install php
+7-apt install php-mysql
+8apt install php-fpm
+9apt install php-curl
+10apt install php-cgi
+进入nginx配置目录
+cd /etc/nginx/sites-available/  
+拷贝原始配置备份
+cp default default_backup
+编译配置
+vi default
+清空并粘贴如下配置
+server {
+        listen 80;
+        listen [::]:80;
+        root /www/web/;//网站1目录
+        index index.html index.htm index.nginx-debian.html index.php;
+
+        server_name 你的域名1(aaa.com);
+
+        location / {
+                try_files $uri $uri/ =404;
+        }
+        location ~ \.php$ {
+            include /etc/nginx/snippets/fastcgi-php.conf;
+            fastcgi_pass   unix:/run/php/php7.2-fpm.sock;
+            fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+            include        fastcgi_params;
+        }
+}
+server {
+        listen 80;
+        listen [::]:80;
+
+        server_name 你的域名2(bbb.com);
+
+        root /www/web2/;//网站2目录
+        index index.html index.php;
+
+        location / {
+                try_files $uri $uri/ =404;
+        }
+        location ~ \.php$ {
+            include /etc/nginx/snippets/fastcgi-php.conf;
+            fastcgi_pass   unix:/run/php/php7.2-fpm.sock;
+            fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+            include        fastcgi_params;
+        }
+}
+按esc然后输入:wq保存并退出 
+执行nginx -s reload重新加载配置
+如果有报错则执行systemctl start nginx启动nginx然后再重新加载配置
+如果启动失败，请查找nginx启动失败相关问题进行解决。
+如果一切没问题，且你的域名已经指向到你的服务器地址，这个时候应该能正常访问了。

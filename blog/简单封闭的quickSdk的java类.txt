@@ -1,0 +1,412 @@
+用法：
+1、主Activity继承QuickActivity
+2、主Activity的onCreate方法中调用createQuick();传入参数和设置消息接收接口QuickNotifier 
+3、通过QuickUtil.signIn();QuickUtil.toPay(json);等方法直接调用即可
+4、QuickNotifier 中接收回调参数进行交互
+5、记得修改QuickUtil中的productCode和productKey参数
+6、调用toPay前要先调用report上报用户数据，toPay需要用到report的用户数据
+7、登录，支付，上报等接口均已测试，其它的未用到没详细测试，根据自己需求进行完善。
+
+
+
+QuickActivity.java
+
+package com.tencent.tmgp.wxhl.cqms;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+
+import com.pq.tools.QuickNotifier;
+import com.pq.tools.QuickUtil;
+
+public class QuickActivity extends Activity {
+    protected boolean isInit=false;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+    /**此方法必需在onCreate中调用*/
+    protected void createQuick(Activity act, QuickNotifier iql){
+        QuickUtil.create(act,iql);
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            QuickUtil.init("授权成功，调用初始化！");
+        }else QuickUtil.requestPermissions();
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        com.quicksdk.Sdk.getInstance().onStart(QuickActivity.this);
+    }
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        com.quicksdk.Sdk.getInstance().onRestart(QuickActivity.this);
+    }
+    @Override
+    protected void onPause(){
+        super.onPause();
+        com.quicksdk.Sdk.getInstance().onPause(QuickActivity.this);
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        com.quicksdk.Sdk.getInstance().onResume(QuickActivity.this);
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        com.quicksdk.Sdk.getInstance().onStop(QuickActivity.this);
+    }
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        com.quicksdk.Sdk.getInstance().onDestroy(QuickActivity.this);
+    }
+    @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        com.quicksdk.Sdk.getInstance().onNewIntent(intent);
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        com.quicksdk.Sdk.getInstance().onActivityResult(this, requestCode, resultCode, data);
+    }
+}
+QuickUtil.java
+
+package com.pq.tools;
+import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
+import android.widget.Toast;
+import com.google.gson.JsonObject;
+import com.quicksdk.BaseCallBack;
+import com.quicksdk.Extend;
+import com.quicksdk.FuncType;
+import com.quicksdk.Payment;
+import com.quicksdk.QuickSDK;
+import com.quicksdk.Sdk;
+import com.quicksdk.User;
+import com.quicksdk.entity.GameRoleInfo;
+import com.quicksdk.entity.OrderInfo;
+import com.quicksdk.entity.ShareInfo;
+import com.quicksdk.entity.UserInfo;
+import com.quicksdk.notifier.ExitNotifier;
+import com.quicksdk.notifier.InitNotifier;
+import com.quicksdk.notifier.LoginNotifier;
+import com.quicksdk.notifier.LogoutNotifier;
+import com.quicksdk.notifier.PayNotifier;
+import com.quicksdk.notifier.SwitchAccountNotifier;
+public class QuickUtil {
+    private static String productCode="88888888580914549619521688888888";
+    private static String productKey="88888888";
+    private static boolean autoLogin=true;
+    private static Activity act;
+    private static QuickNotifier iql;
+    private static GameRoleInfo rinfo;
+    private static boolean isReport=false;
+    private static boolean isInit=false;
+    public static void create(Activity _act, QuickNotifier _iql){
+        act=_act;
+        iql=_iql;
+        QuickSDK.getInstance().setIsLandScape(false);
+        if(Build.VERSION.SDK_INT >18) {
+            try {
+                if (!checkPermissions())requestPermissions();
+                else init("已获得权限，直接初始化");
+            } catch (Exception e) {
+                requestPermissions();
+            }
+        }else com.quicksdk.Sdk.getInstance().init(act, productCode, productKey);
+        com.quicksdk.Sdk.getInstance().onCreate(act);
+    }
+    public static void setProduct(String code,String key){
+        productCode=code;
+        productKey=key;
+    }
+    public static void requestPermissions(){
+        ActivityCompat.requestPermissions(act, new String[] { Manifest.permission.READ_PHONE_STATE,Manifest.permission.WRITE_EXTERNAL_STORAGE }, 1);
+    }
+    public static boolean checkPermissions(){
+        if ((ContextCompat.checkSelfPermission(act, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED)
+                || (ContextCompat.checkSelfPermission(act, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED))return false;
+        return true;
+    }
+    public static void init(String msg){
+        setNotifier();
+        log("调用初始化:"+msg);
+        Sdk.getInstance().init(act, productCode, productKey);
+    }
+    public static void signIn(){
+        User.getInstance().login(act);
+    }
+    public static void signOut(){
+        User.getInstance().logout(act);
+    }
+    public static void exit(){
+        //通过isShowExitDialog判断渠道sdk是否有退出框
+        if(QuickSDK.getInstance().isShowExitDialog()){
+            Sdk.getInstance().exit(act);
+        }else{
+            // 游戏调用自身的退出对话框，点击确定后，调用quick的exit接口
+            new AlertDialog.Builder(act).setTitle("退出").setMessage("是否退出游戏?").setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface arg0, int arg1) {
+                    Sdk.getInstance().exit(act);
+                }
+            }).setNegativeButton("取消", null).show();
+        }
+    }
+    public static int getChannelType(){
+        return Extend.getInstance().getChannelType();
+    }
+    public static String getDeviceId(){
+        return Extend.getInstance().getDeviceID(act);
+    }
+    public static void uploadEvent(String event,String value){
+        Extend.getInstance().uploadNode(act,event,value);
+    }
+    public static String getConfig(){
+        return Extend.getInstance().getExtrasConfig("key");
+    }
+    public static boolean getFunc(){
+        return Extend.getInstance().isFunctionSupported(FuncType.HIDE_TOOLBAR); //是否支持隐藏悬浮框功能
+    }
+    public static void runFunc(){
+        Extend.getInstance().callFunction(act, FuncType.HIDE_TOOLBAR); //调用隐藏悬浮框的方法
+    }
+    /**调用客服插件(付费功能)*/
+    public static void callCustomService(){
+        Extend.getInstance().callPlugin(act, FuncType.CUSTOM, "1000","嘻嘻哈哈","zzzz","1");//后四个参数请依次传入 角色id，角色名，区服名，vip等级
+    }
+    /**调用渠道分享*/
+    public static void share(ShareInfo si){
+        Extend.getInstance().callFunctionWithParams(act, FuncType.SHARE,si);
+    }
+    /**实名认证**/
+    public static void verifyRealName() {
+        final Activity activity = act;
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // 判断渠道是否支持实名认证功能
+                if (Extend.getInstance().isFunctionSupported(FuncType.REAL_NAME_REGISTER)) {
+                    Extend.getInstance().callFunctionWithParamsCallBack(activity, FuncType.REAL_NAME_REGISTER, new BaseCallBack() {
+                        @Override
+                        public void onSuccess(Object... arg0) {
+                            if (arg0 != null && arg0.length > 0) {
+                                JsonObject jsonObject = (JsonObject) arg0[0];
+                                Log.d("json", "==========" + jsonObject.toString());
+                                // 用户id
+                                String uid = jsonObject.get("uid").getAsString();
+                                // 年龄, 如果渠道没返回默认为-1
+                                int age = jsonObject.get("age").getAsInt();
+                                // 是否已实名 true表示已实名
+                                // false表示未实名,如果渠道没返回默认为false
+                                boolean realName = jsonObject.get("realName").getAsBoolean();
+                                // oppo实名认证失败之后是否可以继续游戏 true表示可以
+                                // false表示不可以,如果渠道没返回默认为true
+                                boolean resumeGame = jsonObject.get("resumeGame").getAsBoolean();
+                                // 预留字段,如果渠道没返回默认为""的字符串
+                                String other = jsonObject.get("other").getAsString();
+                                // 游戏根据返回信息做对应的逻辑处理
+
+                            }
+                        }
+
+                        @Override
+                        public void onFailed(Object... arg0) {
+
+                        }
+                    });
+                }
+            }
+        });
+    }
+    public static void reportUserinfo(String jsonStr,boolean newRole){
+        try{
+            rinfo= QuickParam.getRoleInfo(jsonStr);
+            User.getInstance().setGameRoleInfo(act, rinfo, newRole);
+            isReport=true;
+        }catch(Exception err){
+            iql.reportFailed("参数错误:"+err.getMessage());
+        }
+    }
+    public static void toPay(String jsonStr){
+        try{
+            if(!isReport)reportUserinfo(jsonStr,false);
+            OrderInfo oinfo= QuickParam.getOrderInfo(jsonStr);
+            Payment.getInstance().pay(act,oinfo,rinfo);
+        }catch(Exception err){
+            iql.payFailed("","参数错误",err.getMessage());
+        }
+    }
+    public static void showTip(String msg){
+        Toast.makeText(act, msg, Toast.LENGTH_SHORT).show();
+    }
+    public static void setNotifier(){
+        QuickSDK.getInstance().setInitNotifier(new InitNotifier() {
+            @Override
+            public void onSuccess() {
+                log("初始化完了");
+                iql.inited();
+            }
+
+            @Override
+            public void onFailed(String s, String s1) {
+                showTip("初始化失败："+s+"--"+s1);
+            }
+        });
+        QuickSDK.getInstance().setLoginNotifier(new LoginNotifier() {
+            @Override
+            public void onSuccess(UserInfo userInfo) {
+                iql.loginSuccess(userInfo);
+            }
+            @Override
+            public void onCancel() {
+            }
+            @Override
+            public void onFailed(final String message, String trace) {
+                if(autoLogin){
+                    autoLogin=false;
+                    signIn();
+                }else iql.loginFailed(message,trace);
+            }
+        });
+        QuickSDK.getInstance().setLogoutNotifier(new LogoutNotifier() {
+            @Override
+            public void onSuccess() {
+                //注销成功
+            }
+            @Override
+            public void onFailed(String message, String trace) {
+                //注销失败，不做处理
+            }
+        });
+        QuickSDK.getInstance().setSwitchAccountNotifier(new SwitchAccountNotifier() {
+            @Override
+            public void onSuccess(UserInfo userInfo) { //切换账号成功的回调，返回新账号的userInfo
+
+            }
+
+            @Override
+            public void onCancel() {
+                //切换账号取消
+            }
+            @Override
+            public void onFailed(String message, String trace) {
+                //切换账号失败
+            }
+        });
+        QuickSDK.getInstance().setPayNotifier(new PayNotifier() {
+            @Override
+            public void onSuccess(String sdkOrderID, String cpOrderID,String extrasParams) {
+                iql.paySuccess(sdkOrderID,cpOrderID,extrasParams);
+                //sdkOrderID:quick订单号 cpOrderID：游戏订单号
+            }
+            @Override
+            public void onCancel(String cpOrderID) {
+                //支付取消
+            }
+            @Override
+            public void onFailed(String cpOrderID, String message, String trace) {
+                iql.payFailed(cpOrderID,message,trace);
+            }
+        });
+        QuickSDK.getInstance().setExitNotifier(new ExitNotifier() {
+            @Override
+            public void onSuccess() {
+                //退出成功，游戏在此做自身的退出逻辑处理
+            }
+            @Override
+            public void onFailed(String message, String trace) {
+                //退出失败，不做处理
+            }
+        });
+    }
+    public static void log(String msg){
+        Log.d("log>>>",msg);
+    }
+}
+QuickParam.java
+
+package com.pq.tools;
+import com.quicksdk.entity.GameRoleInfo;
+import com.quicksdk.entity.OrderInfo;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+public class QuickParam {
+    public static GameRoleInfo getRoleInfo(String jsonStr) throws JSONException {
+        GameRoleInfo g=new GameRoleInfo();
+        JSONObject obj=new JSONObject(jsonStr);
+        g.setServerID(obj.getString("serverID"));//数字字符串，不能含有中文字符
+        g.setServerName(obj.getString("serverName"));
+        g.setGameRoleName(obj.getString("gameRoleName"));
+        g.setGameRoleID(obj.getString("gameRoleID"));
+        g.setGameBalance(obj.getString("gameBalance"));
+        g.setVipLevel(obj.getString("vipLevel"));//设置当前用户vip等级，必须为数字整型字符串,请勿传"vip1"等类似字符串
+        g.setGameUserLevel(obj.getString("gameUserLevel"));//设置游戏角色等级
+        g.setPartyName(obj.getString("partyName"));//设置帮派名称
+        g.setRoleCreateTime(obj.getString("roleCreateTime")); //UC，当乐与1881，TT渠道必传，值为10位数时间戳
+        g.setPartyId(obj.getString("partyId")); //360渠道参数，设置帮派id，必须为整型字符串
+        g.setGameRoleGender(obj.getString("gameRoleGender"));//360渠道参数
+        g.setGameRolePower(obj.getString("gameRolePower")); //360,TT语音渠道参数，设置角色战力，必须为整型字符串
+        g.setPartyRoleId(obj.getString("partyRoleId")); //360渠道参数，设置角色在帮派中的id
+        g.setPartyRoleName(obj.getString("partyRoleName")); //360渠道参数，设置角色在帮派中的名称
+        g.setProfessionId(obj.getString("professionId")); //360渠道参数，设置角色职业id，必须为整型字符串
+        g.setProfession(obj.getString("profession")); //360渠道参数，设置角色职业名称
+        g.setFriendlist(obj.getString("friendlist")); //360渠道参数，设置好友关系列表，格式请参考：http://open.quicksdk.net/help/detail/aid/190
+        return g;
+    }
+    public static GameRoleInfo getPayRoleInfo(String jsonStr) throws JSONException {
+        GameRoleInfo g=new GameRoleInfo();
+        JSONObject jobj=new JSONObject(jsonStr);
+        g.setServerID(jobj.getString("serverID"));//数字字符串，不能含有中文字符
+        g.setServerName(jobj.getString("serverName"));
+        g.setGameRoleName(jobj.getString("gameRoleName"));
+        g.setGameRoleID(jobj.getString("gameRoleID"));
+        g.setGameBalance(jobj.getString("gameBalance"));
+        g.setVipLevel(jobj.getString("vipLevel"));//设置当前用户vip等级，必须为数字整型字符串,请勿传"vip1"等类似字符串
+        g.setGameUserLevel(jobj.getString("gameUserLevel"));//设置游戏角色等级
+        g.setPartyName(jobj.getString("partyName"));//设置帮派名称
+        return g;
+    }
+    public static OrderInfo getOrderInfo(String jsonStr) throws  JSONException{
+        OrderInfo o=new OrderInfo();
+        JSONObject jobj=new JSONObject(jsonStr);
+        o.setCpOrderID(jobj.getString("cpOrderID"));
+        o.setGoodsName(jobj.getString("goodsName"));//商品名称，不带数量
+        o.setCount(jobj.getInt("count"));//游戏币数量
+        o.setAmount(jobj.getInt("amount"));
+        o.setGoodsID(jobj.getString("goodsID"));
+        o.setGoodsDesc(jobj.getString("goodsDesc"));
+        o.setPrice(jobj.getDouble("price"));
+        o.setExtrasParams(jobj.getString("extrasParams"));
+        return o;
+    }
+}
+QuickNotifier.java
+
+package com.pq.tools;
+import com.quicksdk.entity.UserInfo;
+public interface QuickNotifier {
+    void inited();
+    void loginSuccess(UserInfo info);
+    void loginFailed(String message, String trace);
+    void paySuccess(String sdkOrderID, String cpOrderID, String extrasParams);
+    void payFailed(String cpOrderID, String message, String trace);
+    void reportFailed(String msg);
+}
