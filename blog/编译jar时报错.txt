@@ -1,0 +1,15 @@
+要将某个包编译成JAR时报以下错误:
+Error: Invalid package reference in library; not included in Android: javax.naming.directory. Referenced from org.bouncycastle.jce.provider.X509LDAPCertStoreSpi. [InvalidPackage]
+
+Error: Invalid package reference in library; not included in Android: javax.naming. Referenced from org.bouncycastle.jce.provider.X509LDAPCertStoreSpi. [InvalidPackage]
+解决方法：
+在模块下新建lint.xml并写入以下内容：
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="InvalidPackage" severity="ignore" />
+</lint>
+再次编译即可成功
+
+不过这样处理后在编译的JAR包中会带上org.bouncycastle.x509这个包
+而这个包会导致使用这个jar的时候报错
+具体原因暂时不明白，直接用压缩文件打开jar文件，然后删除org.bouncycastle.x509再引用即可
