@@ -1,0 +1,5 @@
+位于XXX的网页无法加载，因为
+net:ERR_CLEARTEXT_NOT_PERMITTED
+解决：
+在androidManifest.xml的application中添加
+android:usesCleartextTraffic="true"

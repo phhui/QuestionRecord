@@ -1,0 +1,6 @@
+安卓项目启动报错：
+Unsupported Modules Detected: Compilation is not supported for following modules: Shell. Unfortunately you can't have non-Gradle Java modules and Android-Gradle modules in one project.
+解决方法3种：
+1、关闭Android Studio ，去项目根目录删除.idea文件，重启AS搞定
+2、File -> Invalidate Caches / Restart -> Invalidate Caches & Restart.
+3、File -> Sync Project With Gradle Files
