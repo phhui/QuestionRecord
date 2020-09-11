@@ -1,0 +1,14 @@
+android stuido3.5
+两个JAR包引用同一类库，且版本不一样时会报错，
+在app下的build.gradle添加以下配置即可
+configurations.all {
+    exclude group: 'com.android.support', module: 'support-annotations'
+    exclude group: 'com.android.support', module: 'support-compat'
+    exclude group: 'com.android.support', module: 'support-core-ui'
+    exclude group: 'com.android.support', module: 'support-fragment'
+    exclude group: 'com.android.support', module: 'support-core-utils'
+    exclude group: 'com.android.support', module: 'support-media-compat'
+    exclude group: 'com.squareup.okhttp3',module:'okhttp'
+    exclude group: 'com.squareup.okio',module:'okio'
+}
+//super-annotations 。。。冲突，屏蔽，有几个加几个，这里几个是我碰到的
