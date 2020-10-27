@@ -1,0 +1,2 @@
+<img v-bind:src="\'resource/assets/bg/bg_\'+dress+\'.jpg\'" width="120px" height="160px"></img>\
+单引号要用反斜杠

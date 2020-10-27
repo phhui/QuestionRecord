@@ -1,0 +1,3 @@
+set tabstop=4  #设置tab为4格
+set expandtab  #设置tab为空格
+colorscheme ron #设置VIM本色为ron
