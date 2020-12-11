@@ -1,0 +1,108 @@
+一、修改配置    /etc/nginx/sites-ava.../default
+配置参考：
+server {
+        listen 80;
+        listen [::]:80;
+        root /phhui/web/ppqq.cc/;
+        index index.html index.htm index.nginx-debian.html index.php;
+
+        server_name ppqq.cc;
+
+        location / {
+            try_files $uri $uri/ =404;
+//允许跨域开始--这个比较多，网上有比较简单的，此配置测试成功，就存储这个了
+        if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*';
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+
+                add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+
+                add_header 'Access-Control-Max-Age' 1728000;
+                add_header 'Content-Type' 'text/plain charset=UTF-8';
+                add_header 'Content-Length' 0;
+                return 204;
+             }
+             if ($request_method = 'POST') {
+                add_header 'Access-Control-Allow-Origin' '*';
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+                add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+             }
+             if ($request_method = 'GET') {
+                add_header 'Access-Control-Allow-Origin' '*';
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+                add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+             }
+//允许跨域结束
+        }
+        location ~ \.php$ {
+            include /etc/nginx/snippets/fastcgi-php.conf;
+            fastcgi_pass   unix:/run/php/php7.2-fpm.sock;
+            fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+            include        fastcgi_params;
+        }
+}
+
+
+二、配置说明：
+1、Access-Control-Allow-Origin，这里使用变量 $http_origin取得当前来源域，大家说用“*”代表允许所有，我实际使用并不成功，原因未知；
+
+2、Access-Control-Allow-Credentials，为 true 的时候指请求时可带上Cookie，自己按情况配置吧；
+
+3、Access-Control-Allow-Methods，OPTIONS一定要有的，另外一般也就GET和POST，如果你有其它的也可加进去；
+
+4、Access-Control-Allow-Headers，这个要注意，里面一定要包含自定义的http头字段（就是说前端请求接口时，如果在http头里加了自定义的字段，这里配置一定要写上相应的字段），从上面可看到我写的比较长，我在网上搜索一些常用的写进去了，里面有“web-token”和“app-token”，这个是我项目里前端请求时设置的，所以我在这里要写上；
+
+5、Access-Control-Expose-Headers，可不设置，看网上大致意思是默认只能获返回头的6个基本字段，要获取其它额外的，先在这设置才能获取它；
+
+6、语句“ if ($request_method = 'OPTIONS') { ”，因为浏览器判断是否允许跨域时会先往后端发一个 options 请求，然后根据返回的结果判断是否允许跨域请求，所以这里单独判断这个请求，然后直接返回；
+
+
+三、跨域相关配置
+
+1）最简单的，但网上有说无效
+add_header Access-Control-Allow-Origin *;
+add_header Access-Control-Allow-Headers X-Requested-With;
+add_header Access-Control-Allow-Methods GET,POST,OPTIONS;
+
+2）别人修改后的，我没测试过
+	add_header 'Access-Control-Allow-Origin' $http_origin;
+	add_header 'Access-Control-Allow-Credentials' 'true';
+	add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+	add_header 'Access-Control-Allow-Headers' 'DNT,web-token,app-token,Authorization,Accept,Origin,Keep-Alive,User-Agent,X-Mx-ReqToken,X-Data-Type,X-Auth-Token,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+	add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+	if ($request_method = 'OPTIONS') {
+		add_header 'Access-Control-Max-Age' 1728000;
+		add_header 'Content-Type' 'text/plain; charset=utf-8';
+		add_header 'Content-Length' 0;
+		return 204;
+	}
+
+
+3）我自己用的，测试通过的
+
+if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*';
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+
+                add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+
+                add_header 'Access-Control-Max-Age' 1728000;
+                add_header 'Content-Type' 'text/plain charset=UTF-8';
+                add_header 'Content-Length' 0;
+                return 204;
+             }
+             if ($request_method = 'POST') {
+                add_header 'Access-Control-Allow-Origin' '*';
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+                add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+             }
+             if ($request_method = 'GET') {
+                add_header 'Access-Control-Allow-Origin' '*';
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+                add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+             }
+
+
+四、如果配置后无效：
+1、检查请求的地址是不是对的，我就因为复制的DEMO没改地址，折腾了半天才发现地址错了
+2、如果地址没错则清一下缓存，这个浏览器会缓存，导致即始服务器改对了，也报跨域。换个浏览器试一下也行
