@@ -79,3 +79,16 @@ sudo vi /etc/rc.local
 iPhone及安卓手机上的配置,可以参考这个教程。
 
 需要特别注意的是,在Chrome上需要设置代理为SOCKS v5模式,127.0.0.1:1080,建议安装SwitchySharp扩展
+
+
+
+相关问题：
+报错：Package 'python-m2crypto' has no installation candidate
+解决：apt install libssl-dev swig
+          pip install python-m2crypto
+
+报错：
+undefined symbol: EVP_CIPHER_CTX_cleanup
+打开/usr/local/lib/python3.8/dist-packages/shadowsocks/crypto/openssl.py
+执行：%s/CIPHER_CTX_cleanup/CIPHER_CTX_reset/g
+然后保存
