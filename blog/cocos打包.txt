@@ -1,0 +1,32 @@
+cocos编辑器中默认最低SDK版本为21，生成的项目中却是16，需要改成21或23或更高
+在gradle.properties中将
+PROP_MIN_SDK_VERSION=16
+改成
+PROP_MIN_SDK_VERSION=21
+
+Q1>>
+报错：
+Android NDK: WARNING: Unsupported source file extensions in XXX/XXX/XXX/Android.mk for module cocos2dx_static  
+
+解决：
+在android.mk中添加
+LOCAL_CPP_EXTENSION := .hpp .cpp .cc
+
+Q2>>
+报错：
+Build file 'E:\pro\cocos\roPushlish\build\jsb-default\frameworks\runtime-src\proj.android-studio\game\build.gradle' line: 3
+
+A problem occurred evaluating project ':game'.
+> No signature of method: build_1qksdegnobiw33u2zclxj0r6x.android() is applicable for argument types: (build_1qksdegnobiw33u2zclxj0r6x$_run_closure1) values: [build_1qksdegnobiw33u2zclxj0r6x$_run_closure1@4365d6fb]
+
+解决：
+注释：baseFeature true
+
+
+Q3>>
+报错：
+找不到'com.android.feature'
+解决：
+换成'com.android.application'
+同时将android.featureVariants.all 改成android.applicationVariants.all 
+
