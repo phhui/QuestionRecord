@@ -1,3 +1,5 @@
+首次安装android sdk后使用cocos creator构建需要重启电脑才能构建成功，否则无法构建
+
 cocos编辑器中默认最低SDK版本为21，生成的项目中却是16，需要改成21或23或更高
 在gradle.properties中将
 PROP_MIN_SDK_VERSION=16
