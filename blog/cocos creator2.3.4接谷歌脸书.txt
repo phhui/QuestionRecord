@@ -1,0 +1,117 @@
+2.3.4打包默认使用的是4.10.3的gradle，这个版本太低了，无法正常使用，需要提升到5.6.4
+相关参数：
+android gradle plugin version 3.6.3
+gradle version 5.6.4
+
+gradle.properties参数如下：
+PROP_COMPILE_SDK_VERSION=29//compile sdk版本
+PROP_MIN_SDK_VERSION=16//最低支持的版本
+PROP_TARGET_SDK_VERSION=29//target sdk版本
+PROP_BUILD_TOOLS_VERSION=28.0.3//build tools工具版本
+android.useAndroidX=true//启用androidX
+android.enableJetifier=true//这个不确定有没有用
+org.gradle.jvmargs=-Xmx1536m//这个使用命令行编译时如果内存不足则需要使用此配置
+
+settings.gradle文件参数如下：
+include ':libcocos2dx'//这里删除默认的game和instantapp这两个不需要，删除，否则影响编译
+project(':libcocos2dx').projectDir = new File(settingsDir, '../../cocos2d-x/cocos/platform/android/libcocos2dx')
+include ':ro'//ro为编译的项目名
+project(':ro').projectDir = new File(settingsDir, 'app')
+
+gradle/wrapper/gradle-wrapper.properties文件中distributionUrl参数为：
+distributionUrl=https\://services.gradle.org/distributions/gradle-5.6.4-all.zip
+
+项目的build.gradle
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.6.3'//这里使用android studio3.6.3所以标配3.6.3,如果升到4.1.2或更高的话则根据情况自行决定是用3.6.3或4.1.2
+        classpath 'com.google.gms:google-services:4.3.5'//这个是测试通过使用的版本
+    }
+}
+
+
+
+模块的build.gradle配置修改如下：
+1、defaultConfig中的versionName "1.0"后面添加：
+ndk {
+    abiFilters "armeabi-v7a"//"armeabi", "armeabi-v7a", "arm64-v8a"这里根据需要自行选择
+}
+2、android.applicationVariants.all中copy相关的修改如下：
+原始：
+       copy {
+            from "${sourceDir}/res"
+            into "${outputDir}/res"
+        }
+        copy {
+            from "${sourceDir}/subpackages"
+            into "${outputDir}/subpackages"
+        }
+        copy {
+            from "${sourceDir}/src"
+            into "${outputDir}/src"
+        }
+        copy {
+            from "${sourceDir}/jsb-adapter"
+            into "${outputDir}/jsb-adapter"
+        }
+        copy {
+            from "${sourceDir}/main.js"
+            from "${sourceDir}/project.json"
+            into outputDir
+        }
+改成：
+        copy {
+            from "${sourceDir}"
+            include "subpackages/**"
+            include "res/**"
+            include "src/**"
+            include "jsb-adapter/**"
+            into outputDir
+        }
+        copy {
+            from "${sourceDir}/main.js"
+            from "${sourceDir}/project.json"
+            into outputDir
+        }
+原因：升级gradle版本后原来默认的方法不可用，需要调整。其中的src,res,subpackages,jsb-adapter等目录根据自己项目的目录自行调整
+
+3、dependencies中添加相关引用，具体使用哪些包根据自已的需求自行调整
+    implementation 'com.google.android.gms:play-services-auth:17.0.0'
+    implementation 'com.google.firebase:firebase-analytics:17.2.2'
+    implementation 'com.android.billingclient:billing:2.1.0'
+    implementation 'com.facebook.android:facebook-login:[5,6)'
+    implementation 'com.facebook.android:facebook-android-sdk:[5,6)'
+    implementation 'com.android.installreferrer:installreferrer:1.0'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation files('libs/anjlab-iabv3-current.jar')
+
+
+
+
+项目/jni/CocosAndroid.mk中修改如下：
+1、LOCAL_MODULE := cocos2djs_shared改成
+     LOCAL_MODULE := cocos2djs
+
+
+另外，在踩坑过程中卡在no rule to make target cocos2djs这个错误卡了近2天，按上面的设置调整后没有碰到过，在网上有看到解决方案，这里记录一下
+
+报错 no rule to make target cocos2djs
+最后发现在 使用ndk build的时候 命令最后 有个cocos2djs 的参数
+手动在 cmd 中去掉这个参数 就可以编译通过！
+但是经过一番折腾 gradle 构建的时候 这个参数 无法去掉
+于是通过查看ndk-cmd -h的命令参数 
+发现了-o 这个参数得到最后的解决办法
+在 arguments 'NDK_DEBUG=1' 或者arguments 'NDK_DEBUG=0' 后面添加-o 变为
+arguments 'NDK_DEBUG=1 -o' 或 arguments 'NDK_DEBUG=0 -o'
+然后再用 gradle 构建 即可
+
+
+
+
+
+
+

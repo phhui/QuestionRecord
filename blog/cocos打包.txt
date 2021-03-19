@@ -32,3 +32,23 @@ Q3>>
 换成'com.android.application'
 同时将android.featureVariants.all 改成android.applicationVariants.all 
 
+Q4>>
+报错：
+1、AAPT: error: resource android:attr/colorError not found.
+2、AAPT: error: resource android:attr/dialogCornerRadius not found.
+解决：
+提升compileSdkVersion和targetSdkVersion版本到29或更高
+
+Q5>>
+报错：
+couldn’t find “libcocos2djs.so
+解决：
+在app下的build.gradle的android>defaultConfig中添加so库
+android {
+    defaultConfig {
+        ndk {
+            // 设置支持的SO库架构
+            abiFilters 'armeabi-v7a'
+        }
+    }
+}
