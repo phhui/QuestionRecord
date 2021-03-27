@@ -52,3 +52,12 @@ android {
         }
     }
 }
+
+Q6>>
+报错：
+Execution failed for task ':ro:externalNativeBuildDebug'.
+> Build command failed.
+  Error while executing process E:\soft\AndroidSdk\ndk\17.2.4988734\ndk-build.cmd with arguments {NDK_PROJECT_PATH=null APP_BUILD_SCRIPT=D:\work\cocos\ro\build\jsb-default\frameworks\runtime-src\proj.android-studio\app\jni\Android.mk NDK_APPLICATION_MK=D:\work\cocos\ro\build\jsb-default\frameworks\runtime-src\proj.android-studio\app\jni\Application.mk APP_ABI=armeabi-v7a NDK_ALL_ABIS=armeabi-v7a NDK_DEBUG=1 APP_PLATFORM=android-16 NDK_OUT=D:/work/cocos/ro/build/jsb-default/frameworks/runtime-src/proj.android-studio/app/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT=D:\work\cocos\ro\build\jsb-default\frameworks\runtime-src\proj.android-studio\app\build\intermediates\ndkBuild\debug\lib NDK_TOOLCHAIN_VERSION=clang NDK_MODULE_PATH=D:\work\cocos\ro\build\jsb-default\frameworks\cocos2d-x;D:\work\cocos\ro\build\jsb-default\frameworks\cocos2d-x\cocos;D:\work\cocos\ro\build\jsb-default\frameworks\cocos2d-x\external -j16 NDK_DEBUG=1 cocos2djs}
+解决：
+删除local.properties中的
+ndk.dir=E\:\\XXX\\XXX\\ndk\\XX2.4988734
