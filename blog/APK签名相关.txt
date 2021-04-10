@@ -1,0 +1,3 @@
+一、查看APK签名信息：
+    解压APK找到CERT.RSA
+    然后命令行：keytool -printcert -file CERT_.RSA

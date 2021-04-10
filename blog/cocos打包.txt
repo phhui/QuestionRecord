@@ -1,0 +1,63 @@
+首次安装android sdk后使用cocos creator构建需要重启电脑才能构建成功，否则无法构建
+
+cocos编辑器中默认最低SDK版本为21，生成的项目中却是16，需要改成21或23或更高
+在gradle.properties中将
+PROP_MIN_SDK_VERSION=16
+改成
+PROP_MIN_SDK_VERSION=21
+
+Q1>>
+报错：
+Android NDK: WARNING: Unsupported source file extensions in XXX/XXX/XXX/Android.mk for module cocos2dx_static  
+
+解决：
+在android.mk中添加
+LOCAL_CPP_EXTENSION := .hpp .cpp .cc
+
+Q2>>
+报错：
+Build file 'E:\pro\cocos\roPushlish\build\jsb-default\frameworks\runtime-src\proj.android-studio\game\build.gradle' line: 3
+
+A problem occurred evaluating project ':game'.
+> No signature of method: build_1qksdegnobiw33u2zclxj0r6x.android() is applicable for argument types: (build_1qksdegnobiw33u2zclxj0r6x$_run_closure1) values: [build_1qksdegnobiw33u2zclxj0r6x$_run_closure1@4365d6fb]
+
+解决：
+注释：baseFeature true
+
+
+Q3>>
+报错：
+找不到'com.android.feature'
+解决：
+换成'com.android.application'
+同时将android.featureVariants.all 改成android.applicationVariants.all 
+
+Q4>>
+报错：
+1、AAPT: error: resource android:attr/colorError not found.
+2、AAPT: error: resource android:attr/dialogCornerRadius not found.
+解决：
+提升compileSdkVersion和targetSdkVersion版本到29或更高
+
+Q5>>
+报错：
+couldn’t find “libcocos2djs.so
+解决：
+在app下的build.gradle的android>defaultConfig中添加so库
+android {
+    defaultConfig {
+        ndk {
+            // 设置支持的SO库架构
+            abiFilters 'armeabi-v7a'
+        }
+    }
+}
+
+Q6>>
+报错：
+Execution failed for task ':ro:externalNativeBuildDebug'.
+> Build command failed.
+  Error while executing process E:\soft\AndroidSdk\ndk\17.2.4988734\ndk-build.cmd with arguments {NDK_PROJECT_PATH=null APP_BUILD_SCRIPT=D:\work\cocos\ro\build\jsb-default\frameworks\runtime-src\proj.android-studio\app\jni\Android.mk NDK_APPLICATION_MK=D:\work\cocos\ro\build\jsb-default\frameworks\runtime-src\proj.android-studio\app\jni\Application.mk APP_ABI=armeabi-v7a NDK_ALL_ABIS=armeabi-v7a NDK_DEBUG=1 APP_PLATFORM=android-16 NDK_OUT=D:/work/cocos/ro/build/jsb-default/frameworks/runtime-src/proj.android-studio/app/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT=D:\work\cocos\ro\build\jsb-default\frameworks\runtime-src\proj.android-studio\app\build\intermediates\ndkBuild\debug\lib NDK_TOOLCHAIN_VERSION=clang NDK_MODULE_PATH=D:\work\cocos\ro\build\jsb-default\frameworks\cocos2d-x;D:\work\cocos\ro\build\jsb-default\frameworks\cocos2d-x\cocos;D:\work\cocos\ro\build\jsb-default\frameworks\cocos2d-x\external -j16 NDK_DEBUG=1 cocos2djs}
+解决：
+删除local.properties中的
+ndk.dir=E\:\\XXX\\XXX\\ndk\\XX2.4988734

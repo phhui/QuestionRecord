@@ -1,0 +1,27 @@
+Q1:登录报错：登出出错:将你登入到此应用程序时出错
+A1:检查密钥散列是否已添加到脸书后台
+
+Q2:登录失败SERVER_ERROR:[code]1349195[message]:该密钥散列不匹配任何已存储的密钥散列
+A2:同上
+
+Q3:debug版本可以登录，release或发布google play后无法使用facebook登录
+A3:release的密钥散列和google play发布后的密钥散列与facebook后台存储的不一到处，把两个版本对应的密钥散列添加到facebook后台即可
+
+Q4:如何获取facebook密钥散列
+A4:添加以下函数，并传入包名，即可在控制台输出密钥散列
+public static void getkey(String packName) {
+        try {
+            PackageInfo info = act.getPackageManager().getPackageInfo(packName, PackageManager.GET_SIGNATURES);
+            for (Signature sign : info.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(sign.toByteArray());
+                Log.d("AppLog>>> ",Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            Log.d("AppLog>>> ",e.toString());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            Log.d("AppLog>>> ",e.toString());
+        }
+}

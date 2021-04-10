@@ -1,5 +1,13 @@
+Q1>>
 位于XXX的网页无法加载，因为
 net:ERR_CLEARTEXT_NOT_PERMITTED
 解决：
 在androidManifest.xml的application中添加
 android:usesCleartextTraffic="true"
+
+
+Q2>>
+报错：Expecting android:screenOrientation="unspecified"
+解决：
+在application根属性加入代码忽略飘红：
+tools:ignore="LockedOrientationActivity" 
