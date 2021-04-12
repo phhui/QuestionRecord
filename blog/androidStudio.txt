@@ -1,0 +1,5 @@
+Q1>> 控制台编译输出中文乱码
+A1>>1、双击Shift，输入vmoption,，选择Edit Custom CM Options
+         2、如果之前没有配置过，会弹出窗口问是否创建配置文件，点击Create
+         3、输入    -Dfile.encoding=UTF-8
+         4、保存，重启就可以了！
