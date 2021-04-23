@@ -10,7 +10,7 @@ Q1>>
 报错：
 Android NDK: WARNING: Unsupported source file extensions in XXX/XXX/XXX/Android.mk for module cocos2dx_static  
 
-解决：
+A1：
 在android.mk中添加
 LOCAL_CPP_EXTENSION := .hpp .cpp .cc
 
@@ -21,14 +21,14 @@ Build file 'E:\pro\cocos\roPushlish\build\jsb-default\frameworks\runtime-src\pro
 A problem occurred evaluating project ':game'.
 > No signature of method: build_1qksdegnobiw33u2zclxj0r6x.android() is applicable for argument types: (build_1qksdegnobiw33u2zclxj0r6x$_run_closure1) values: [build_1qksdegnobiw33u2zclxj0r6x$_run_closure1@4365d6fb]
 
-解决：
+A2：
 注释：baseFeature true
 
 
 Q3>>
 报错：
 找不到'com.android.feature'
-解决：
+A3：
 换成'com.android.application'
 同时将android.featureVariants.all 改成android.applicationVariants.all 
 
@@ -36,13 +36,13 @@ Q4>>
 报错：
 1、AAPT: error: resource android:attr/colorError not found.
 2、AAPT: error: resource android:attr/dialogCornerRadius not found.
-解决：
+A4：
 提升compileSdkVersion和targetSdkVersion版本到29或更高
 
 Q5>>
 报错：
 couldn’t find “libcocos2djs.so
-解决：
+A5：
 在app下的build.gradle的android>defaultConfig中添加so库
 android {
     defaultConfig {
@@ -58,6 +58,20 @@ Q6>>
 Execution failed for task ':ro:externalNativeBuildDebug'.
 > Build command failed.
   Error while executing process E:\soft\AndroidSdk\ndk\17.2.4988734\ndk-build.cmd with arguments {NDK_PROJECT_PATH=null APP_BUILD_SCRIPT=D:\work\cocos\ro\build\jsb-default\frameworks\runtime-src\proj.android-studio\app\jni\Android.mk NDK_APPLICATION_MK=D:\work\cocos\ro\build\jsb-default\frameworks\runtime-src\proj.android-studio\app\jni\Application.mk APP_ABI=armeabi-v7a NDK_ALL_ABIS=armeabi-v7a NDK_DEBUG=1 APP_PLATFORM=android-16 NDK_OUT=D:/work/cocos/ro/build/jsb-default/frameworks/runtime-src/proj.android-studio/app/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT=D:\work\cocos\ro\build\jsb-default\frameworks\runtime-src\proj.android-studio\app\build\intermediates\ndkBuild\debug\lib NDK_TOOLCHAIN_VERSION=clang NDK_MODULE_PATH=D:\work\cocos\ro\build\jsb-default\frameworks\cocos2d-x;D:\work\cocos\ro\build\jsb-default\frameworks\cocos2d-x\cocos;D:\work\cocos\ro\build\jsb-default\frameworks\cocos2d-x\external -j16 NDK_DEBUG=1 cocos2djs}
-解决：
+A6：
 删除local.properties中的
 ndk.dir=E\:\\XXX\\XXX\\ndk\\XX2.4988734
+
+
+
+Q7>>
+报错:
+ERROR: executing external native build for ndkBuild D:\XXX\XXX\build\jsb-link\frameworks\runtime-src\proj.android-studio\app\jni\Android.mk
+Affected Modules: XXX
+
+A7:两种情况
+1、如果编译的是default模板，则在修改build\jsb-default\frameworks\cocos2d-x\cocos\Android.mk
+2、如果编译的是link模板，则修改cocos creator编辑器安装目录下的Creator\2.3.4\resources\cocos2d-x\cocos\Android.mk文件
+在android.mk中添加
+LOCAL_CPP_EXTENSION := .hpp .cpp .cc
+
