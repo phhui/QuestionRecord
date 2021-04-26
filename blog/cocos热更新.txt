@@ -1,0 +1,37 @@
+Q1>>清单文件下载失败
+A1:
+main.js中需要添加
+(function () {
+    if (typeof window.jsb === 'object') {
+        var hotUpdateSearchPaths = localStorage.getItem('HotUpdateSearchPaths');
+        if (hotUpdateSearchPaths) {
+            var paths = JSON.parse(hotUpdateSearchPaths);
+            jsb.fileUtils.setSearchPaths(paths);
+
+            var fileList = [];
+            var storagePath = paths[0] || '';
+            var tempPath = storagePath + '_temp/';
+            var baseOffset = tempPath.length;
+
+            if (jsb.fileUtils.isDirectoryExist(tempPath) && !jsb.fileUtils.isFileExist(tempPath + 'project.manifest.temp')) {
+                jsb.fileUtils.listFilesRecursively(tempPath, fileList);
+                fileList.forEach(srcPath => {
+                    var relativePath = srcPath.substr(baseOffset);
+                    var dstPath = storagePath + relativePath;
+
+                    if (srcPath[srcPath.length] == '/') {
+                        cc.fileUtils.createDirectory(dstPath)
+                    }
+                    else {
+                        if (cc.fileUtils.isFileExist(dstPath)) {
+                            cc.fileUtils.removeFile(dstPath)
+                        }
+                        cc.fileUtils.renameFile(srcPath, dstPath);
+                    }
+                })
+                cc.fileUtils.removeDirectory(tempPath);
+            }
+        }
+    }
+})();
+参考：https://docs.cocos.com/creator/manual/zh/advanced-topics/hot-update.html
