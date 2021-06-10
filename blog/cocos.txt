@@ -1,0 +1,5 @@
+Q1>>
+启动报错：
+SyntaxError: Unexpected token ﻿ in JSON at position 0, file: db://assets/resources/config_dev.json
+
+A1>>把json的编码格式改成UTF-8-BOM或者UTF-8格式就行

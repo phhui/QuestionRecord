@@ -75,3 +75,16 @@ A7:两种情况
 在android.mk中添加
 LOCAL_CPP_EXTENSION := .hpp .cpp .cc
 
+
+Q8>>
+升级引擎版本后打包报错：
+evalString script jsb-adapter/jsb-engine.js, failed
+[ERROR] Failed to invoke require, location: xxx/Creator/x.x.x/resources/cocos2d-x/cocos/scripting/js-bindings/manual/jsb_global.cpp:300
+ERROR: Uncaught TypeError: jsb.onError is not a function, location: jsb-adapter/jsb-engine.js:0:0
+......
+ScriptEngine::evalString script main.js, failed!
+A8:
+build.gradle和settings.gradle中把引擎版本更新到最新的
+
+原因：
+使用编辑模板，编辑模板未更新
