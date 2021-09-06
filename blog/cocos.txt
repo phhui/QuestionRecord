@@ -3,3 +3,10 @@ Q1>>
 SyntaxError: Unexpected token ﻿ in JSON at position 0, file: db://assets/resources/config_dev.json
 
 A1>>把json的编码格式改成UTF-8-BOM或者UTF-8格式就行
+
+Q2>>
+设置node的parent时引擎底层报错this._children.length    找不到属性length
+cannot find property 'length'
+
+A2>> node已被销毁导致_children为null，引擎底层未做判断直接取length导致报错
+找出node被销毁的原因并修复

@@ -7,7 +7,11 @@ android:usesCleartextTraffic="true"
 
 
 Q2>>
-报错：Expecting android:screenOrientation="unspecified"
-解决：
-在application根属性加入代码忽略飘红：
-tools:ignore="LockedOrientationActivity" 
+AndroidManifest.xml中配置
+android:screenOrientation="portrait"  红色波浪线告警
+
+
+A2:
+1、不设置屏幕的方向
+2、在application根属性加入代码忽略飘红：tools:ignore="LockedOrientationActivity" 
+3、打开设置，搜索chrom，把"Activity is locked to an orientation"勾选去掉，点击确定
